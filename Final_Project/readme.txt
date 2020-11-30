@@ -1,0 +1,1 @@
+accurace of plain adaboost = 86.7704 with a threshold of 4 on testCroppedFaces
