@@ -3,6 +3,8 @@ load train
 load testFaces
 load testFacePhotos
 
+
+%%% starting test for plain adaBoost %%%
 x = size(testFaces, 1);
 y = size(testFaces, 2);
 z = size(testFaces, 3);
@@ -38,3 +40,5 @@ for q = 1: z
 end
 
 accuracy = (correct / z) * 100;
+
+%%% add skin detection under here %%%
