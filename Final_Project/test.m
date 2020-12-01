@@ -1,55 +1,54 @@
 clear;
 load train
 load testFaces
-load testFacesPhotos
-% 
-% x = size(testFaces, 1);
-% y = size(testFaces, 2);
-% 
-% 
-% 
-x = testFaces(:,:,43);
-imshow(x, []);
-% imshow(x, []);
-% for i = 1: 50
-%     results(:,:,i) = boosted_multiscale_search(testFaces(:,:,i), 1, boosted_classifier, weak_classifiers, [41, 41]);
-%     f = 8;
-% end
-% 
-% imshow(results(:,:,32)>4);
-% 
-% correct = 0;
-% for q = 1: z
-%     tmp = results(:,:,q);
-%     for x = 1: 41
-%         for y = 1: 41
-%             tmp(x,y) = results(41+x, 41+y, q);
-%         end
-%     end
-%     tmp = (tmp > 4);
-%     count = 0;
-%     for x = 1: 41
-%         for y = 1: 41
-%             if(tmp(x,y) == 1)
-%                 count = count + 1;
-%             end
-%         end
-%     end
-%     
-%     if (count > 50)
-%         correct = correct + 1;
-%         imshow(tmp, []);
-%     end
-% end
-% 
-% AdaBoostAccuracy = (correct / z) * 100;
+load testFacePhotos
 
+
+%%% starting test for plain adaBoost %%%
+x = size(trainingFaces, 1);
+y = size(trainingFaces, 2);
+z = size(trainingFaces, 3);
+
+results = zeros(x, y, z);
+
+for i = 1: z
+    results(:,:,i) = boosted_multiscale_search(trainingFaces(:,:,i), 1, boosted_classifier, weak_classifiers, [41, 41]);  
+end
+
+correct = 0;
+for q = 1: z
+    tmp = results(:,:,q);
+    for x = 1: 41
+        for y = 1: 41
+            tmp(x,y) = results(41+x, 41+y, q);
+        end
+    end
+    tmp = (tmp > 4);
+    count = 0;
+    for x = 1: 41
+        for y = 1: 41
+            if(tmp(x,y) == 1)
+                count = count + 1;
+            end
+        end
+    end
+    
+    if (count > 50)
+        correct = correct + 1;
+    end
+    if (count < 50)
+        incorrectResult(i) = i;
+    end
+end
+
+accuracy = (correct / z) * 100;
+
+%%% add skin detection under here %%%
 %%% skin detection
-
 negative_histogram = read_double_image('negatives.bin');
 positive_histogram = read_double_image('positives.bin');
 
-testimage = testFacesPhotos{1,11};
+testimage = testFacePhotos{1,11};
 
 windowNum = 1;
 foundFaces = 0;
@@ -59,7 +58,7 @@ skinCount = 0;
 skinimage = detect_skin(testimage, positive_histogram, negative_histogram);
 skinimage = (skinimage > .55);
 imshow(skinimage,[]);
-face_size = [50,50]
+face_size = [50,50];
 face_vertical = face_size(1);
 face_horizontal = face_size(2);
 
@@ -115,8 +114,8 @@ wc = weak_classifiers{a};
 
 % choose a training image
 b = random_number(1, example_number);
-sizeOfFaces = size(testFaces,3);
-if (b <= size(testFaces, 3))
+sizeOfFaces = size(trainingFaces,3);
+if (b <= size(trainingFaces, 3))
     integral = face_integrals(:, :, b);
 else
     integral = nonface_integrals(:, :, num);
@@ -136,3 +135,4 @@ weights = ones(example_number, 1) / example_number;
 % next line takes about 8.5 seconds.
 tic; [index, error, threshold] = find_best_classifier(responses, labels, weights); toc
 disp([index error]);
+boosted_classifier = AdaBoost(responses, labels, 15);
