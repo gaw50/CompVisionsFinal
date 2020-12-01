@@ -49,7 +49,7 @@ imshow(x, []);
 negative_histogram = read_double_image('negatives.bin');
 positive_histogram = read_double_image('positives.bin');
 
-testimage = testFacesPhotos{1,17};
+testimage = testFacesPhotos{1,11};
 
 windowNum = 1;
 foundFaces = 0;
@@ -57,7 +57,7 @@ correct = 0;
 skinCount = 0;
 
 skinimage = detect_skin(testimage, positive_histogram, negative_histogram);
-skinimage = (skinimage > .75);
+skinimage = (skinimage > .55);
 imshow(skinimage,[]);
 face_size = [50,50]
 face_vertical = face_size(1);
@@ -95,12 +95,12 @@ for i=1:100: size(skinimage,1)
         if (check > 1000)
            
            
-           
+             % if there is skin in the photo we will run the face detector 
              imshow(testimage, []);
              thistThis = rgb2gray(testimage);
              thistThis = double(thistThis);
              [result, boxes] =  boosted_detector_demo(thistThis, 1,  boosted_classifier, ...
-                          weak_classifiers, [77, 77], 2);
+                          weak_classifiers, [77, 77], 4);
              imshow(result, []);
         end
         windowNum = windowNum + 1;
@@ -108,71 +108,3 @@ for i=1:100: size(skinimage,1)
 end
 
 
-% for i = 1 : size(faceWindows,2)
-%     photo = rgb2gray(faceWindows{1,i});
-%     photo = double(photo);
-%     
-%     imshow(photo, [])
-%     
-% 
-%     tmp =boosted_multiscale_search(photo, 2, boosted_classifier, weak_classifiers, [41, 41]);
-%     figure(3);
-%     imshow(max((tmp > 4) * 255, photo * 0.5), [])
-% 
-%     imshow(tmp, []);
-%     count = 0;
-%     for x = 1: size(tmp,1)
-%         for y = 1: size(tmp, 2)
-%             if(tmp(x,y) == 1)
-%                 count = count + 1;
-%             end
-%         end
-%     end
-%     count
-%     if (count > 50)
-%         correctFaces(:, i) = facePosition(:,i);
-%     end
-%     if((count < 50))
-%         foundFaces = foundFaces -1;
-%         
-%     end
-% 
-% end
-% 
-% 
-% for i =1: foundFaces
-%     result = draw_rectangle2(testimage, correctFaces(1, i)+49, correctFaces(2, i)+49, 75, 75);
-%     figure(i);
-%     imshow(result);
-%     p = 1;
-% end
-
-  %%%%%Bootstrapping%%%%%
-load train
-% choose a classifier
-a = random_number(1, classifier_number);
-wc = weak_classifiers{a};
-
-% choose a training image
-b = random_number(1, example_number);
-sizeOfFaces = size(testFaces,3);
-if (b <= size(testFaces, 3))
-    integral = face_integrals(:, :, b);
-else
-    integral = nonface_integrals(:, :, num);
-end
-
-
-% see the precomputed response
-
-weights = ones(example_number, 1) / example_number;
-
-
-cl = random_number(1, 1000);
-[error, thr, alpha] = weighted_error(responses, labels, weights, cl);
-
-
-weights = ones(example_number, 1) / example_number;
-% next line takes about 8.5 seconds.
-tic; [index, error, threshold] = find_best_classifier(responses, labels, weights); toc
-disp([index error]);
