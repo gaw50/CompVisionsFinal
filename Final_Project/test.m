@@ -107,4 +107,32 @@ for i=1:100: size(skinimage,1)
     end
 end
 
+%%%%%Bootstrapping%%%%%
+load train
+% choose a classifier
+a = random_number(1, classifier_number);
+wc = weak_classifiers{a};
 
+% choose a training image
+b = random_number(1, example_number);
+sizeOfFaces = size(testFaces,3);
+if (b <= size(testFaces, 3))
+    integral = face_integrals(:, :, b);
+else
+    integral = nonface_integrals(:, :, num);
+end
+
+
+% see the precomputed response
+
+weights = ones(example_number, 1) / example_number;
+
+
+cl = random_number(1, 1000);
+[error, thr, alpha] = weighted_error(responses, labels, weights, cl);
+
+
+weights = ones(example_number, 1) / example_number;
+% next line takes about 8.5 seconds.
+tic; [index, error, threshold] = find_best_classifier(responses, labels, weights); toc
+disp([index error]);
