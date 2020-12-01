@@ -1,18 +1,22 @@
 clear;
 load train
 load testFaces
-load testFacePhotos
-
+load testFacesPhotos
+% 
 % x = size(testFaces, 1);
 % y = size(testFaces, 2);
-% z = size(testFaces, 3);
 % 
-% results = zeros(x, y, z);
 % 
-% for i = 1: z
+% 
+x = testFaces(:,:,43);
+imshow(x, []);
+% imshow(x, []);
+% for i = 1: 50
 %     results(:,:,i) = boosted_multiscale_search(testFaces(:,:,i), 1, boosted_classifier, weak_classifiers, [41, 41]);
-%     
+%     f = 8;
 % end
+% 
+% imshow(results(:,:,32)>4);
 % 
 % correct = 0;
 % for q = 1: z
@@ -34,62 +38,113 @@ load testFacePhotos
 %     
 %     if (count > 50)
 %         correct = correct + 1;
+%         imshow(tmp, []);
 %     end
 % end
 % 
 % AdaBoostAccuracy = (correct / z) * 100;
-% 
-% %%% skin detection
 
-
-
-
+%%% skin detection
 
 negative_histogram = read_double_image('negatives.bin');
 positive_histogram = read_double_image('positives.bin');
 
-image = testFacePhotos{1,3};
+testimage = testFacesPhotos{1,17};
 
-%%%%%%% Extracting 100x100 chunk sized windows
-for i=1:99: size(image,1)
-    if ((i+99) > size(image,1))
+windowNum = 1;
+foundFaces = 0;
+correct = 0;
+skinCount = 0;
+
+skinimage = detect_skin(testimage, positive_histogram, negative_histogram);
+skinimage = (skinimage > .75);
+imshow(skinimage,[]);
+face_size = [50,50]
+face_vertical = face_size(1);
+face_horizontal = face_size(2);
+
+vertical_size = size(testimage, 1);
+horizontal_size = size(testimage, 2);
+
+result = zeros(vertical_size, horizontal_size);
+
+
+for i=1:100: size(skinimage,1)
+    
+    if ((i+100) > size(skinimage,1))
             continue
     end
-    for q=1:99: size(image,2)
-        if ((q+99) > size(image,2))
+    for q=1:100: size(skinimage,2)
+        
+        if ((q+100) > size(skinimage,2))
             continue
         end
-        % Getting the window 
-        window = (image(i:i+99, q:q+99, :));
-        imshow(window, []);
-        % find skin for the window
-        result = detect_skin(window, positive_histogram, negative_histogram);
-        % if theres a 75% chance that pixel is a skin pixel we keep it
-        result = (result > .75);
+        window = (skinimage(i:i+100, q:q+100, :));
+       
+        
         
         check = 0;
-        
-        % looping over the result to see if theres enough skin pixels
-        % to classify as a face
-        for m=1: size(result,1)
-            for q=1: size(result,2)
-                if(result(m,q) == 1)
+        imshow(window, []);
+        for m=1: size(window,1)
+            for n=1: size(window,2)
+                if(window(m,n) == 1)
                     check = check + 1;
                 end
             end
         end
-        
-        % if there are 75 skin pixels we classify as a face
-        if (check > 75)
-            colorFaceResults{i} = boosted_multiscale_search(result, 1, boosted_classifier, weak_classifiers, [41, 41]);
+        if (check > 1000)
+           
+           
+           
+             imshow(testimage, []);
+             thistThis = rgb2gray(testimage);
+             thistThis = double(thistThis);
+             [result, boxes] =  boosted_detector_demo(thistThis, 1,  boosted_classifier, ...
+                          weak_classifiers, [77, 77], 2);
+             imshow(result, []);
         end
+        windowNum = windowNum + 1;
     end
 end
 
-for i=1: size(colorFaceResults, 2)
-    tmp = colorFaceResults{1,i};
-    if(~isempty(tmp))
-        imshow(tmp,[]);
-    end
-end
+
+% for i = 1 : size(faceWindows,2)
+%     photo = rgb2gray(faceWindows{1,i});
+%     photo = double(photo);
+%     
+%     imshow(photo, [])
+%     
+% 
+%     tmp =boosted_multiscale_search(photo, 2, boosted_classifier, weak_classifiers, [41, 41]);
+%     figure(3);
+%     imshow(max((tmp > 4) * 255, photo * 0.5), [])
+% 
+%     imshow(tmp, []);
+%     count = 0;
+%     for x = 1: size(tmp,1)
+%         for y = 1: size(tmp, 2)
+%             if(tmp(x,y) == 1)
+%                 count = count + 1;
+%             end
+%         end
+%     end
+%     count
+%     if (count > 50)
+%         correctFaces(:, i) = facePosition(:,i);
+%     end
+%     if((count < 50))
+%         foundFaces = foundFaces -1;
+%         
+%     end
+% 
+% end
+% 
+% 
+% for i =1: foundFaces
+%     result = draw_rectangle2(testimage, correctFaces(1, i)+49, correctFaces(2, i)+49, 75, 75);
+%     figure(i);
+%     imshow(result);
+%     p = 1;
+% end
+
   
