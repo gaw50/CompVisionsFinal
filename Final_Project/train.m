@@ -1,7 +1,7 @@
 %%%%%%%% TRAIN.m %%%%%%%%
 clear;
 load trainingFaces
-load trainingNonFaces
+load trainingNonFaces5000
 
 num = 1000;
 startingAccuracy = 50;
@@ -46,8 +46,8 @@ while(isIncreasing)
     nonface_integrals = zeros(41, 41, tnf);
 
     for i=1:tnf
-        image = trainingNonFaces(:,:,i);
-        image = image(35:75, 30:70);
+        image = trainingNonFaces{i};
+        
 
         x = size(image, 1);
         y = size(image, 2);
